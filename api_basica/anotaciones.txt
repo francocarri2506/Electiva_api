@@ -1,0 +1,3 @@
+para ver mediante el metodo GET: http://127.0.0.1:8000/api/items/
+
+probar mediante consola de comandos curl "http://127.0.0.1:8000/api/items/"
