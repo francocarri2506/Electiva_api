@@ -77,26 +77,26 @@ class AnuncioListaAPIView(APIView):
 
 
 class AnuncioDetalleAPIView(APIView):
-    def get(self, request, pk, format=None):
-        anuncio = get_object_or_404(Anuncio, pk=pk)
-        serializer = AnuncioSerializer(anuncio)
-        return Response(serializer.data)
+    def get(self, request, pk, format=None): #Define lo que se hace cuando se hace una petición GET al endpoint, por ejemplo: GET /api-view/anuncio/3/ para obtener el anuncio con ID 3.
+        anuncio = get_object_or_404(Anuncio, pk=pk) #buscar un anuncio con la clave primaria (pk)
+        serializer = AnuncioSerializer(anuncio) #Se serializa el objeto anuncio para convertirlo a un formato JSON válido que se pueda enviar como respuesta al cliente
+        return Response(serializer.data) #Se retorna una respuesta HTTP con los datos serializados del anuncio
 
-    def put(self, request, pk, format=None):
+    def put(self, request, pk, format=None): #Maneja una petición PUT, que en REST implica reemplazar completamente el recurso con los datos nuevos
         anuncio = get_object_or_404(Anuncio, pk=pk)
-        serializer = AnuncioSerializer(anuncio, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
+        serializer = AnuncioSerializer(anuncio, data=request.data)# Se instancia el serializer con el objeto existente (anuncio) y los nuevos datos que llegaron desde el cliente (request.data).
+        if serializer.is_valid(): #Verifica si los datos enviados cumplen con las reglas del serializador
+            serializer.save() #Si los datos son válidos, se actualiza el objeto anuncio con los nuevos datos.
+            return Response(serializer.data) #Devuelve los datos actualizados en la respuesta
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, pk, format=None):
+    def delete(self, request, pk, format=None): #Maneja una petición DELETE al endpoint, por ejemplo: DELETE /api-view/anuncio/3/
         anuncio = get_object_or_404(Anuncio, pk=pk)
         anuncio.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_204_NO_CONTENT) #Devuelve una respuesta sin contenido, con código 204, que indica que la eliminación fue exitosa
 
-    def patch(self, request, pk):
-        anuncio = get_object_or_404(Anuncio, pk=pk)
+    def patch(self, request, pk): #Maneja una petición PATCH, que se usa para actualizar parcialmente un objeto.
+        anuncio = get_object_or_404(Anuncio, pk=pk) #pasamos el anuncio actual y los nuevos datos.
         serializer = AnuncioSerializer(anuncio, data=request.data, partial=True) # EL PARTIAL LO QUE NOS PERMITE ES MODIFICAR SOLO UN CAMPO
         if serializer.is_valid():
             serializer.save()
