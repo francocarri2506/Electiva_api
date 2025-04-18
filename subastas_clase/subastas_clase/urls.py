@@ -19,5 +19,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('apps.anuncio.urls', namespace='anuncio'))
+    path('', include('apps.anuncio.urls', namespace='anuncio')),
+    path('view-set/', include('subastas_clase.router')),
 ]
