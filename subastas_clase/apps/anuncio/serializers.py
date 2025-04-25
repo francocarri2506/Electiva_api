@@ -13,10 +13,22 @@ class CategoriaSerializer(serializers.ModelSerializer): #
 
 ############ VALIDACIÓN A NIVEL DE CAMPO #########################
 
+
     def validate_nombre(self, value):
         # Verificar que el nombre no contenga la palabra "categoría"
         if "categoria" in value.lower():
-            raise serializers.ValidationError("El nombre no puede contener la palabra 'categoría'.") #lanso una instancia de error
+            raise serializers.ValidationError("El nombre no puede contener la palabra 'categoría'.") #lanzo una instancia de error
+
+        # validacion para no permitir categorías duplicadas
+
+        if Categoria.objects.filter(nombre__iexact=value).exists():
+            raise serializers.ValidationError("Ya existe una categoría con ese nombre.")
+
+        # validar que no se creen categorias sin sentidos como de solo 1 o 2 letras
+
+        if len(value.strip()) < 3:
+            raise serializers.ValidationError("El nombre de la categoría debe tener al menos 3 caracteres.")
+
         return value
 
 
@@ -157,6 +169,13 @@ class AnuncioSerializer(serializers.ModelSerializer):
                 'precio_inicial': 'El precio inicial debe ser mayor a cero.'
             })
 
+        # validar que una subasta no dure menos de 1 hora.
+        #se puede cambiar para hacerla durar otro tiempo
+        if fecha_inicio and fecha_fin:
+            duracion = fecha_fin - fecha_inicio
+            if duracion.total_seconds() < 3600:
+                raise serializers.ValidationError("La subasta debe durar al menos 1 hora.")
+
         # Validar que las categorías estén activas
         for cat in categorias:
             if not cat.activa:
@@ -165,3 +184,12 @@ class AnuncioSerializer(serializers.ModelSerializer):
                 })
 
         return data
+
+#validacion a nivel de campo
+""" 
+    def validate_precio_inicial(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("El precio inicial debe ser mayor que cero.")
+       return value
+
+"""
