@@ -1,7 +1,11 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from .filters import CategoriaFilter, AnuncioFilter
 from .models import Categoria, Anuncio
 from .serializers import CategoriaSerializer, AnuncioSerializer
 from ..usuario.models import Usuario
@@ -98,7 +102,7 @@ class AnuncioDetalleAPIView(APIView):
     def patch(self, request, pk): #Maneja una petición PATCH, que se usa para actualizar parcialmente un objeto.
         anuncio = get_object_or_404(Anuncio, pk=pk) #pasamos el anuncio actual y los nuevos datos.
         serializer = AnuncioSerializer(anuncio, data=request.data, partial=True) # EL PARTIAL LO QUE NOS PERMITE ES MODIFICAR SOLO UN CAMPO
-        if serializer.is_valid():
+        if serializer.is_valid(): #aca se aplican todas las validaciones y se convoca a save
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -126,12 +130,63 @@ class CategoriaDetalleGenericView(RetrieveUpdateDestroyAPIView):
 #ViewSet: ModelViewSet y ReadOnlyModelViewSet
 
 from rest_framework import viewsets
-
+""" #comentado para hacer lo del tp4 que es la parte de abajo
 class CategoriaViewSet(viewsets.ModelViewSet): #La clase ModelViewSet, proporciona todas las acciones, para listar, recuperar, crear y eliminar objetos correspondientes a un Modelo definido.
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
+"""
+####### para el tp4 DEFINICION DE FILTROS Y ORDEN EN EL API ######
+"""
+class CategoriaViewSet(viewsets.ModelViewSet):
+    queryset = Categoria.objects.all()
+    serializer_class = CategoriaSerializer
 
+    def get_queryset(self):
+        return Categoria.objects.filter(nombre__istartswith='a') #solo categorias que empiezan con a
+"""
 
+#--------- no me estaria funcionando, no muestra nada------------------
+"""
+class CategoriaViewSet(viewsets.ModelViewSet):
+    queryset = Categoria.objects.all()
+    serializer_class = CategoriaSerializer
+
+    def get_queryset(self):
+        queryset = Categoria.objects.all() #si no paso un nombre por parametro me devuelve todo
+        parametro_nombre = self.request.query_params.get('nombre', None)
+        if parametro_nombre is not None:
+           # queryset = queryset.filter(nombre=parametro_nombre) #se pueden filtros por igualdad
+           queryset = queryset.filter(nombre__icontains=parametro_nombre)
+        return queryset
+"""
+######################### USO DE DJANGO FILTER BACKEND  #########################
+"""
+class CategoriaViewSet(viewsets.ModelViewSet):
+    queryset = Categoria.objects.all()
+    serializer_class = CategoriaSerializer
+    #filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['nombre', 'activa']
+
+"""
+
+######################### USO DE DJANGO FILTER BACKEND luego de crear el archivo filters.py #########################
+"""
+class CategoriaViewSet(viewsets.ModelViewSet):
+    queryset = Categoria.objects.all()
+    serializer_class = CategoriaSerializer
+    filterset_class = CategoriaFilter
+"""
+######################### USO DE ORDERING FILTER  #########################
+
+from rest_framework import status, viewsets, filters
+
+class CategoriaViewSet(viewsets.ModelViewSet):
+    queryset = Categoria.objects.all()
+    serializer_class = CategoriaSerializer
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_class = CategoriaFilter
+    ordering_fields = ['nombre', 'activa'] #campos por los cuales puedo ordenar
+    ordering = ['nombre'] #orden por defecto
 #-------------------------------vistas genéricas (GenericView)-----------------------------------
 
 #------------------------- vista para listar y crear anuncios ----------
@@ -158,13 +213,24 @@ class AnuncioDetalleGenericView(RetrieveUpdateDestroyAPIView):
 
 from rest_framework.decorators import action
 from datetime import datetime, timezone as dt_timezone
+from rest_framework.permissions import IsAuthenticated
+
+
+
 
 class AnuncioViewSet(viewsets.ModelViewSet):
     queryset = Anuncio.objects.all() # que datos son los que nesesito
     serializer_class = AnuncioSerializer # que serializador voy a usar
+    #permission_classes = [IsAuthenticated]
 
-#Sobrescribimos este método para que automáticamente se asigne el usuario autenticado
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    #filterset_fields = ['activo', 'publicado_por', 'categorias']  # Filtrar por estos campos
+    filterset_class = AnuncioFilter
+    ordering_fields = ['fecha_inicio', 'precio_inicial', 'fecha_fin']  # Ordenar por estos campos
+    search_fields = ['titulo', 'descripcion']  # Buscar por texto
 
+
+    #Sobrescribimos este método para que automáticamente se asigne el usuario autenticado
     def perform_create(self, serializer):
         serializer.save(publicado_por=self.request.user)
 
@@ -186,6 +252,22 @@ class AnuncioViewSet(viewsets.ModelViewSet):
             else:
                 return Response({'mensaje': 'El anuncio ya ha finalizado.'}) #Si el tiempo ya pasó
         return Response({'mensaje': 'Este anuncio no tiene fecha de finalización.'}) #si la fecha es igual a null
+
+
+ ###################orden y filtro para categoria yo
+"""
+class CategoriaViewSet(viewsets.ModelViewSet):
+    queryset = Categoria.objects.all()
+    serializer_class = CategoriaSerializer
+
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    filterset_fields = ['nombre']
+    ordering_fields = ['nombre']
+    search_fields = ['nombre']
+
+"""
+
+
 
 
 

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_filters',
     'apps.usuario',
     'apps.anuncio'
 ]
@@ -133,4 +134,18 @@ REST_FRAMEWORK = {
             'rest_framework.renderers.JSONRenderer',
             'rest_framework.renderers.BrowsableAPIRenderer' #representa los datos del API dentro de un documento HTML navegable
         ],
+    'DEFAULT_FILTER_BACKENDS': # el filtro que voy a usar por defecto
+        [
+            'django_filters.rest_framework.DjangoFilterBackend'
+        ],
+
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 3, #cantidad que se va a mostrar por pagina
+
+    #-------------para el versionado----------------
+    
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
+    'ALLOWED_VERSIONS': ['v1', 'v2'],
+    'DEFAULT_VERSION': 'v1',
+
 }
