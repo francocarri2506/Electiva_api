@@ -139,6 +139,7 @@ class AnuncioSerializer(serializers.ModelSerializer):
         slug_field='nombre',
         queryset=Categoria.objects.all()
     )
+    publicado_por = serializers.StringRelatedField(read_only=True) #para mostrar el nombre de quien lo publico
 
     class Meta:
         model = Anuncio
@@ -193,3 +194,19 @@ class AnuncioSerializer(serializers.ModelSerializer):
        return value
 
 """
+
+
+#--------------------------- tp5 --------------------------------------
+
+# Desarrollar un endpoint para que un usuario diferente al creador de un anuncio, pueda realizar una oferta sobre el
+# mismo, verificando que se encuentre activo al momento de la oferta.
+
+
+from rest_framework import serializers
+from .models import OfertaAnuncio
+
+class OfertaAnuncioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OfertaAnuncio
+        fields = ['id', 'precio_oferta', 'fecha_oferta', 'usuario', 'anuncio', 'es_ganador']
+        read_only_fields = ['fecha_oferta', 'usuario', 'anuncio', 'es_ganador']

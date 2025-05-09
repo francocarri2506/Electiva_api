@@ -28,9 +28,11 @@ class Anuncio(models.Model):
 
     class Meta:
         ordering = ('fecha_inicio',)
+        default_permissions = ('add', 'change', 'delete', 'view')  # Ya vienen por defecto, para el punto 3 del tp5
 
     def __str__(self):
         return f'{self.titulo} - {'Activo' if self.activo else 'Inactivo'} '
+
 
 
 class SeguimientoAnuncio(models.Model):

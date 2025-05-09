@@ -1,5 +1,8 @@
+from django.core.exceptions import ValidationError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
+from rest_framework.authentication import TokenAuthentication
+
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -7,12 +10,12 @@ from rest_framework.views import APIView
 
 from .filters import CategoriaFilter, AnuncioFilter
 from .models import Categoria, Anuncio
-from .serializers import CategoriaSerializer, AnuncioSerializer
+from .serializers import CategoriaSerializer, AnuncioSerializer, OfertaAnuncioSerializer
 from ..usuario.models import Usuario
 
 
 #Vista para listar todas las categorías y crear una nueva:
-
+"""
 class CategoriaListaAPIView(APIView):
     def get(self, request, format=None):
         categorias = Categoria.objects.all()  #tengo un queryset de categorias
@@ -25,6 +28,36 @@ class CategoriaListaAPIView(APIView):
             serializer.save() #si es valido guardamos
             return Response(serializer.data, status=status.HTTP_201_CREATED) #respuesta de exito
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) #respuesta de error
+"""
+
+ ######para solucionar el error cuando estaba probando desde postman
+
+from rest_framework.views import APIView
+from rest_framework.permissions import DjangoModelPermissions
+from rest_framework.response import Response
+from rest_framework import status
+from apps.anuncio.models import Categoria
+from apps.anuncio.serializers import CategoriaSerializer
+
+class CategoriaListaAPIView(APIView):
+    permission_classes = [DjangoModelPermissions]
+
+    def get_queryset(self):
+        return Categoria.objects.all()
+
+    def get(self, request, format=None):
+        categorias = self.get_queryset()
+        serializer = CategoriaSerializer(categorias, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        serializer = CategoriaSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 # Vista para obtener, modificar y eliminar una categoria:
 
@@ -49,7 +82,7 @@ class CategoriaDetalleAPIView(APIView):
 
 
 #Vista para listar todos los anuncios y crear una nuevo:
-
+"""
 class AnuncioListaAPIView(APIView):
     def get(self, request, format=None):
         anuncios = Anuncio.objects.all()
@@ -64,7 +97,34 @@ class AnuncioListaAPIView(APIView):
             serializer.save(publicado_por=usuario)  #
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+"""
 
+
+
+
+#------------------------------- esto lo comento para el tp5 desde linea 100 a linea 165-----------------------------------
+
+#Se elimina código redundante.
+
+#Se respetan correctamente los permisos del sistema.
+
+#Se mantiene el comportamiento esperado para GET, PUT, PATCH y DELETE.
+"""  """
+
+#me estaba dando error la parte de arriba
+from rest_framework import generics, permissions
+
+class AnuncioListaAPIView(generics.ListCreateAPIView):
+    queryset = Anuncio.objects.all()
+    serializer_class = AnuncioSerializer
+    permission_classes = [permissions.DjangoModelPermissions]
+
+    def perform_create(self, serializer):
+        usuario = get_object_or_404(Usuario, pk=1)  # o usar request.user si ya hay autenticación
+        serializer.save(publicado_por=usuario)
+
+"""   """
+#esto estaba comentado desde antes del tp5
 """
     def post(self, request, format=None):
         data = request.data.copy()
@@ -77,7 +137,10 @@ class AnuncioListaAPIView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-"""
+        
+        
+        """
+""" """
 
 
 class AnuncioDetalleAPIView(APIView):
@@ -110,6 +173,8 @@ class AnuncioDetalleAPIView(APIView):
 
     #Vista Concreta para listar y crear Categorias (ListCreateAPIView) y Vista Concreta para
     #recuperar, actualizar y eliminar una categoria (RetrieveUpdateDestroyAPIView):
+
+""" """
 
 
 from rest_framework.generics import (get_object_or_404, ListCreateAPIView, RetrieveUpdateDestroyAPIView)
@@ -206,10 +271,16 @@ class AnuncioDetalleGenericView(RetrieveUpdateDestroyAPIView):
     serializer_class = AnuncioSerializer
 
 
+
+
+
+
+
 #------------------------------- usando ViewSets-----------------------------------
 
 #ModelViewSet incluye todas las operaciones CRUD automáticamente
 
+#-----------------------------------------------------------------------------------
 
 from rest_framework.decorators import action
 from datetime import datetime, timezone as dt_timezone
@@ -217,11 +288,37 @@ from rest_framework.permissions import IsAuthenticated
 
 
 
+from rest_framework.permissions import DjangoObjectPermissions
+
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+#from apps.anuncio.permissions import EsDueñoOsoloLectura
+
+
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import status
 
 class AnuncioViewSet(viewsets.ModelViewSet):
     queryset = Anuncio.objects.all() # que datos son los que nesesito
     serializer_class = AnuncioSerializer # que serializador voy a usar
-    #permission_classes = [IsAuthenticated]
+
+
+#con esto ya me muestra desde postman pero no desde la URL
+
+    #cuando nesesito modificar lo que esta en el seting recien debo agregar estos campos
+
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [DjangoModelPermissions]
+
+
+    """  
+    #permission_classes = [IsAuthenticated] #para el punto2
+    #permission_classes = [IsAuthenticated, DjangoObjectPermissions] #Esto activa la verificación de permisos a nivel de objeto (para editar/eliminar).
+    #permission_classes = [IsAuthenticatedOrReadOnly, EsDueñoOsoloLectura] #verificacion personalizada para eliminar y modificar
+    """
+
+
+#----------------------------     filtros y orden   ----------------------------------------------------------
 
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     #filterset_fields = ['activo', 'publicado_por', 'categorias']  # Filtrar por estos campos
@@ -229,10 +326,12 @@ class AnuncioViewSet(viewsets.ModelViewSet):
     ordering_fields = ['fecha_inicio', 'precio_inicial', 'fecha_fin']  # Ordenar por estos campos
     search_fields = ['titulo', 'descripcion']  # Buscar por texto
 
+#--------------------------------------------------------------------------------------------------------------
 
     #Sobrescribimos este método para que automáticamente se asigne el usuario autenticado
     def perform_create(self, serializer):
         serializer.save(publicado_por=self.request.user)
+
 
     @action(detail=True, methods=['get']) #con detail=true para aplicar esta accion  a un objeto específico el que este seleccionado
     def tiempo_restante(self, request, pk=None):
@@ -252,6 +351,27 @@ class AnuncioViewSet(viewsets.ModelViewSet):
             else:
                 return Response({'mensaje': 'El anuncio ya ha finalizado.'}) #Si el tiempo ya pasó
         return Response({'mensaje': 'Este anuncio no tiene fecha de finalización.'}) #si la fecha es igual a null
+
+    @action(detail=True, methods=['post'], url_path='ofertar')
+    def ofertar(self, request, pk=None):
+        anuncio = self.get_object()
+
+#agregar codigos mas precisos
+
+        if not anuncio.activo:
+            return Response({"error": "El anuncio ya no está activo."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if anuncio.publicado_por == request.user:
+            return Response({"error": "No puedes ofertar en tu propio anuncio."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = OfertaAnuncioSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                oferta = serializer.save(usuario=request.user, anuncio=anuncio)
+                return Response (serializer.data, status=status.HTTP_201_CREATED)
+            except ValidationError as e:
+                return Response({"error": e.message_dict}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
  ###################orden y filtro para categoria yo
@@ -298,3 +418,41 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 """
+
+
+
+
+
+
+
+"""
+
+#--------------------para el tp5 correcciones---------------------------
+
+from rest_framework import generics, permissions
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from .serializers import AnuncioSerializer
+
+class AnuncioListaAPIView(generics.ListCreateAPIView):
+    queryset = Anuncio.objects.all()
+    serializer_class = AnuncioSerializer
+    permission_classes = [permissions.DjangoModelPermissions]
+
+    def perform_create(self, serializer):
+        usuario = get_object_or_404(Usuario, pk=1)  # o usar request.user si ya hay autenticación
+        serializer.save(publicado_por=usuario)
+
+
+class AnuncioDetalleAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Anuncio.objects.all()
+    serializer_class = AnuncioSerializer
+    permission_classes = [permissions.DjangoModelPermissions]
+
+
+"""
+
+
+
+#"detail": "Method \"GET\" not allowed."
+#significa que estás accediendo a la URL correcta, pero usando el método GET, y este endpoint está definido solo para POST.
