@@ -38,10 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'django_filters',
     'apps.usuario',
     'apps.anuncio',
-    'rest_framework.authtoken', #para la autenticacion
+
 ]
 
 MIDDLEWARE = [
@@ -141,16 +142,15 @@ REST_FRAMEWORK = {
         ],
 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 3, #cantidad que se va a mostrar por pagina
+    #'PAGE_SIZE': 3, #cantidad que se va a mostrar por pagina
 
-    #-------------para el versionado----------------
+    #----------------------------para el versionado-------------------------------
     
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
     'ALLOWED_VERSIONS': ['v1', 'v2'],
     'DEFAULT_VERSION': 'v1',
 
-#-------------para la autenticacion----------------
-
+    #---------------------------para la autenticacion-------------------------------
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
@@ -159,10 +159,6 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.DjangoModelPermissions',
     ],
 
+
 }
 
-"""
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',  # backend clásico
-]
-"""
