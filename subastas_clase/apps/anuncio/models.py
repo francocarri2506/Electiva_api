@@ -34,7 +34,6 @@ class Anuncio(models.Model):
         return f'{self.titulo} - {'Activo' if self.activo else 'Inactivo'} '
 
 
-
 class SeguimientoAnuncio(models.Model):
     fecha = models.DateTimeField(auto_now=True)
     anuncio = models.ForeignKey(Anuncio, on_delete=models.CASCADE, related_name='seguimientos')
