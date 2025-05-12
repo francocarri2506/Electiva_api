@@ -142,7 +142,7 @@ REST_FRAMEWORK = {
         ],
 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    #'PAGE_SIZE': 3, #cantidad que se va a mostrar por pagina
+    'PAGE_SIZE': 20, #cantidad que se va a mostrar por pagina
 
     #----------------------------para el versionado-------------------------------
     
@@ -155,6 +155,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
+
+    #---------------------------para la autorizacion-------------------------------
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissions',
     ],

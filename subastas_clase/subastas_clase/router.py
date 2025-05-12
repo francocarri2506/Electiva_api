@@ -1,5 +1,8 @@
 from rest_framework import routers
-from apps.anuncio.api import CategoriaViewSet, AnuncioViewSet
+#from apps.anuncio.api import CategoriaViewSet, AnuncioViewSet
+
+from apps.anuncio.api.api import CategoriaViewSet, AnuncioViewSet
+
 
 # Inicializar el router
 router = routers.DefaultRouter()

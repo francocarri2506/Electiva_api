@@ -3,8 +3,9 @@
 """
 from django.urls import path
 
-from .api import CategoriaListaAPIView, CategoriaDetalleAPIView, AnuncioListaAPIView, AnuncioDetalleAPIView, \
-    CategoriaListaGenericView, CategoriaDetalleGenericView, AnuncioListaGenericView, AnuncioDetalleGenericView
+from apps.anuncio.api.api import CategoriaListaAPIView, CategoriaDetalleAPIView, AnuncioListaAPIView, \
+    AnuncioDetalleAPIView, CategoriaListaGenericView, CategoriaDetalleGenericView, AnuncioListaGenericView, \
+    AnuncioDetalleGenericView
 
 #from .views import AnuncioListaAPIView
 

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Categoria, Anuncio
+from apps.anuncio.models import Categoria, Anuncio
 from rest_framework import serializers
 from datetime import datetime
 from django.utils import timezone
@@ -111,7 +111,7 @@ class AnuncioSerializer(serializers.ModelSerializer):
 
 
 from rest_framework import serializers
-from .models import OfertaAnuncio
+from apps.anuncio.models import OfertaAnuncio
 
 class OfertaAnuncioSerializer(serializers.ModelSerializer):
     class Meta:

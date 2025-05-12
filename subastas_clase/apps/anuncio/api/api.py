@@ -1,31 +1,26 @@
 from django.core.exceptions import ValidationError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.generics import get_object_or_404
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .filters import CategoriaFilter, AnuncioFilter
-from .models import Categoria, Anuncio, OfertaAnuncio
-from .serializers import CategoriaSerializer, AnuncioSerializer, OfertaAnuncioSerializer
-from ..usuario.models import Usuario
+from apps.anuncio.api.filters import CategoriaFilter, AnuncioFilter
+from apps.anuncio.models import Anuncio
+from apps.anuncio.api.serializers import AnuncioSerializer, OfertaAnuncioSerializer
 from rest_framework.permissions import DjangoModelPermissions
 from rest_framework import generics, permissions
 
 from rest_framework.generics import (get_object_or_404, ListCreateAPIView, RetrieveUpdateDestroyAPIView)
-from .models import Categoria
-from .serializers import CategoriaSerializer
+from apps.anuncio.models import Categoria
+from apps.anuncio.api.serializers import CategoriaSerializer
 
 
 from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from datetime import datetime, timezone as dt_timezone
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.permissions import DjangoObjectPermissions
 
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from apps.anuncio.permissions import  EsDueñoDelAnuncio
+from apps.anuncio.api.permissions import EsCreadorDelAnuncio
 
 
 # -------------------------- API VIEW   ------------------------------------
@@ -81,8 +76,9 @@ class AnuncioListaAPIView(generics.ListCreateAPIView):
     permission_classes = [permissions.DjangoModelPermissions]
 
     def perform_create(self, serializer):
-        usuario = get_object_or_404(Usuario, pk=1)  # o usar request.user si ya hay autenticación
-        serializer.save(publicado_por=usuario)
+        #usuario = get_object_or_404(Usuario, pk=1)  # o usar request.user si ya hay autenticación
+        #serializer.save(publicado_por=usuario)
+        serializer.save(publicado_por=self.request.user)
 
 # Vista para obtener, modificar y eliminar un anuncio:
 
@@ -209,8 +205,14 @@ class CategoriaViewSet(viewsets.ModelViewSet):
     ordering_fields = ['nombre', 'activa'] #campos por los cuales puedo ordenar
     ordering = ['nombre'] #orden por defecto
 
+from rest_framework.exceptions import PermissionDenied
 
 class AnuncioViewSet(viewsets.ModelViewSet):
+
+    #lookup_field = 'id' #si agrego el uuid remplazando el id existente
+
+    #lookup_field = 'uuid'
+
     queryset = Anuncio.objects.all() # que datos son los que nesesito
     serializer_class = AnuncioSerializer # que serializador voy a usar
 
@@ -225,14 +227,31 @@ class AnuncioViewSet(viewsets.ModelViewSet):
 
 #--------------------------------------------------------------------------------------------------------------
 
+    """
+    # mas persolinalizado que el perform
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy']:
             return [IsAuthenticated(), EsDueñoDelAnuncio()]
         return [IsAuthenticated()]
+    """
+    permission_classes = [IsAuthenticatedOrReadOnly, EsCreadorDelAnuncio]
 
     #Sobrescribimos este método para que automáticamente se asigne el usuario autenticado
     def perform_create(self, serializer):
         serializer.save(publicado_por=self.request.user)
+
+    #verificar que el usuario sea el dueño al actualizar
+    def perform_update(self, serializer):
+        anuncio = self.get_object()
+        if anuncio.publicado_por != self.request.user:
+            raise PermissionDenied("Solo el creador del anuncio puede modificarlo.")
+        serializer.save()
+
+    # verificar que el usuario sea el dueño al eliminar
+    def perform_destroy(self, instance):
+        if instance.publicado_por != self.request.user:
+            raise PermissionDenied("Solo el creador del anuncio puede eliminarlo.")
+        instance.delete()
 
 
     @action(detail=True, methods=['get']) #con detail=true para aplicar esta accion  a un objeto específico el que este seleccionado

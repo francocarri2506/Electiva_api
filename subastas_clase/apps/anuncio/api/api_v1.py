@@ -1,7 +1,7 @@
 
 from rest_framework import viewsets
 from apps.anuncio.models import Anuncio, Categoria
-from .serializers import AnuncioSerializer, CategoriaSerializer
+from apps.anuncio.api.serializers import AnuncioSerializer, CategoriaSerializer
 
 class AnuncioViewSetV1(viewsets.ModelViewSet):
     queryset = Anuncio.objects.all()
