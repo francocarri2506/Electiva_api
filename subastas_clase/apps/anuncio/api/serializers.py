@@ -1,6 +1,11 @@
 from rest_framework import serializers
-from .models import Categoria, Anuncio
+from apps.anuncio.models import Categoria, Anuncio
+from rest_framework import serializers
+from datetime import datetime
+from django.utils import timezone
+from apps.anuncio.models import Anuncio, Categoria
 
+#-------------------- serializer de categoria ------------------------
 
 class CategoriaSerializer(serializers.ModelSerializer): #
     class Meta:
@@ -10,10 +15,7 @@ class CategoriaSerializer(serializers.ModelSerializer): #
             'nombre',
             'activa',
         ]
-
-############ VALIDACIÓN A NIVEL DE CAMPO #########################
-
-
+#---------------------VALIDACIÓN A NIVEL DE CAMPO ------------------
     def validate_nombre(self, value):
         # Verificar que el nombre no contenga la palabra "categoría"
         if "categoria" in value.lower():
@@ -31,8 +33,7 @@ class CategoriaSerializer(serializers.ModelSerializer): #
 
         return value
 
-
-#########################  VALIDACIÓN A NIVEL DE OBJETO  #########################
+#--------------  VALIDACIÓN A NIVEL DE OBJETO ------------------------
 #para validar mas de un valor para ello se una el metodo validate
     def validate(self, data): #un diccionario del objeto
         if 'principal' in data['nombre'].lower() and not data['activa']:
@@ -40,99 +41,7 @@ class CategoriaSerializer(serializers.ModelSerializer): #
         return data
 
 
-
-############ este era el serializador para el tp2 #########################
-"""
-class AnuncioSerializer(serializers.ModelSerializer):
-    # categorias = serializers.StringRelatedField(many=True) #para mostrar el nombre de la categoria y no id
-    class Meta:
-        model = Anuncio
-        fields = [
-            'id',
-            'titulo',
-            'precio_inicial',
-            #'fecha_publicacion',
-            'categorias',
-            'publicado_por',
-            'oferta_ganadora'
-        ]
-        read_only_fields = [
-            'publicado_por',
-            'oferta_ganadora'
-        ]
-
-"""
-""" 
-
-class AnuncioSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Anuncio
-        fields = '__all__'
-
-class AnuncioSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Anuncio
-        fields = [
-            'id',
-            'titulo',
-            'descripcion',
-            'precio_inicial',
-            'imagen',
-            'fecha_publicacion',
-            'fecha_inicio',
-            'fecha_fin',
-            'activo',
-            'categorias',
-            'publicado_por',
-            'oferta_ganadora',
-        ]
-        read_only_fields = ['fecha_publicacion', 'publicado_por', 'oferta_ganadora']
-
-"""
-
-"""
-from django.contrib.auth.models import User
-from rest_framework import serializers
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'email']
-
-class PasswordSerializer(serializers.Serializer):
-    password = serializers.CharField(write_only=True, required=True)
-"""
-
-########## serializador para el tp3 ######################
-"""
-class AnuncioSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Anuncio
-        fields = '__all__'
-        read_only_fields = ['publicado_por', 'fecha_publicacion', 'oferta_ganadora']
-
-"""
-########## serializador para el tp3  mostrando el nombre de la categoria######################
-"""
-class AnuncioSerializer(serializers.ModelSerializer):
-    categorias = serializers.SlugRelatedField(
-        many=True,
-        slug_field='nombre',
-        queryset=Categoria.objects.all()
-    )
-
-    class Meta:
-        model = Anuncio
-        fields = '__all__'
-        read_only_fields = ['publicado_por', 'fecha_publicacion', 'oferta_ganadora']
-
-"""
-
-from rest_framework import serializers
-from datetime import datetime
-from django.utils import timezone
-from apps.anuncio.models import Anuncio, Categoria
-
+#-------------------- serializer de Anuncio ---------------
 class AnuncioSerializer(serializers.ModelSerializer):
     categorias = serializers.SlugRelatedField(
         many=True,
@@ -170,8 +79,7 @@ class AnuncioSerializer(serializers.ModelSerializer):
                 'precio_inicial': 'El precio inicial debe ser mayor a cero.'
             })
 
-        # validar que una subasta no dure menos de 1 hora.
-        #se puede cambiar para hacerla durar otro tiempo
+        # Validar que una subasta no dure menos de 1 hora. se puede cambiar para hacerla durar otro tiempo
         if fecha_inicio and fecha_fin:
             duracion = fecha_fin - fecha_inicio
             if duracion.total_seconds() < 3600:
@@ -186,7 +94,7 @@ class AnuncioSerializer(serializers.ModelSerializer):
 
         return data
 
-#validacion a nivel de campo
+#---------------------VALIDACIÓN A NIVEL DE CAMPO ------------------
 """ 
     def validate_precio_inicial(self, value):
         if value <= 0:
@@ -203,10 +111,11 @@ class AnuncioSerializer(serializers.ModelSerializer):
 
 
 from rest_framework import serializers
-from .models import OfertaAnuncio
+from apps.anuncio.models import OfertaAnuncio
 
 class OfertaAnuncioSerializer(serializers.ModelSerializer):
     class Meta:
         model = OfertaAnuncio
         fields = ['id', 'precio_oferta', 'fecha_oferta', 'usuario', 'anuncio', 'es_ganador']
         read_only_fields = ['fecha_oferta', 'usuario', 'anuncio', 'es_ganador']
+
