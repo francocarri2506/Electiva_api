@@ -15,7 +15,8 @@ class Categoria(models.Model):
 
 class Anuncio(models.Model):
     #id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) #para reemplazar por el id
-    #uuid = models.UUIDField(unique=True, editable=False, default=uuid.uuid4)
+    uuid = models.UUIDField(unique=True, editable=False, default=uuid.uuid4)
+    #uuid = models.UUIDField(null=True, editable=False) #por el error en las migraciones
 
     titulo = models.CharField(max_length=200)
     descripcion = models.TextField(blank=True)

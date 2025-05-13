@@ -23,6 +23,10 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from apps.anuncio.api.permissions import EsCreadorDelAnuncio
 
 
+from uuid import UUID
+from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, ValidationError
+
 # -------------------------- API VIEW   ------------------------------------
 
 #Vista para listar todas las categorías y crear una nueva
@@ -210,7 +214,6 @@ from rest_framework.exceptions import PermissionDenied
 class AnuncioViewSet(viewsets.ModelViewSet):
 
     #lookup_field = 'id' #si agrego el uuid remplazando el id existente
-
     #lookup_field = 'uuid'
 
     queryset = Anuncio.objects.all() # que datos son los que nesesito
@@ -299,6 +302,42 @@ class AnuncioViewSet(viewsets.ModelViewSet):
                 return Response({"error": "La oferta debe ser mayor al precio inicial del artículo."}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+    """
+    def get_object(self):
+        lookup_value = self.kwargs.get(self.lookup_url_kwarg or self.lookup_field)
+
+        try:
+            # Intentamos parsear el valor como UUID v4
+            uuid_obj = UUID(lookup_value, version=4)
+            return self.queryset.get(uuid=uuid_obj)
+
+        except (ValueError, Anuncio.DoesNotExist):
+            # Si el UUID es inválido o no existe, intentamos por ID
+            try:
+                # Verificamos si el lookup_value es un número entero
+                if lookup_value.isdigit():
+                    return self.queryset.get(id=int(lookup_value))
+                else:
+                    raise ValidationError({"detalle": "El identificador no es un UUID válido ni un ID numérico."})
+            except Anuncio.DoesNotExist:
+                raise NotFound("Anuncio no encontrado por ID ni UUID.")
+    """
+
+    def get_object(self):
+        lookup_value = self.kwargs.get(self.lookup_url_kwarg or self.lookup_field)
+
+        try:
+            uuid_obj = UUID(lookup_value, version=4)
+            return self.queryset.get(uuid=uuid_obj)
+
+        except (ValueError, Anuncio.DoesNotExist):
+            if lookup_value.isdigit():
+                try:
+                    return self.queryset.get(id=int(lookup_value))
+                except Anuncio.DoesNotExist:
+                    raise NotFound("No se encontró un anuncio con ese ID.")
+            raise ValidationError({"detalle": "El identificador no es un UUID válido ni un ID numérico."})
 
     """    
         # Creamos la oferta
