@@ -29,7 +29,7 @@ class AnuncioViewSetV2(viewsets.ModelViewSet):
 
 from rest_framework import viewsets, serializers
 from apps.anuncio.models import Anuncio, Categoria
-from .serializers import AnuncioSerializer, CategoriaSerializer
+
 
 class AnuncioSerializerV2(serializers.ModelSerializer):
     duracion_subasta = serializers.SerializerMethodField()
