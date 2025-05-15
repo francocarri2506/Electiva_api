@@ -1,9 +1,13 @@
 from rest_framework import serializers
+
+from apps.anuncio.api.cambio_api import obtener_tasa_cambio
 from apps.anuncio.models import Categoria, Anuncio
 from rest_framework import serializers
 from datetime import datetime
 from django.utils import timezone
 from apps.anuncio.models import Anuncio, Categoria
+
+from decimal import Decimal
 
 #-------------------- serializer de categoria ------------------------
 
@@ -43,6 +47,7 @@ class CategoriaSerializer(serializers.ModelSerializer): #
 
 #-------------------- serializer de Anuncio ---------------
 class AnuncioSerializer(serializers.ModelSerializer):
+
     categorias = serializers.SlugRelatedField(
         many=True,
         slug_field='nombre',
@@ -50,10 +55,42 @@ class AnuncioSerializer(serializers.ModelSerializer):
     )
     publicado_por = serializers.StringRelatedField(read_only=True) #para mostrar el nombre de quien lo publico
 
+    #precio_usd = serializers.SerializerMethodField()
+    #precio_eur = serializers.SerializerMethodField()
+    precio_convertido = serializers.SerializerMethodField()
     class Meta:
         model = Anuncio
-        fields = '__all__'
+        #fields = '__all__'
+        fields = [
+            'id',
+            'uuid',
+            'titulo',
+            'descripcion',
+            'precio_inicial',
+            'precio_convertido',
+            'categorias',
+            #'imagen',
+            'fecha_publicacion',
+            'fecha_inicio',
+            'fecha_fin',
+            'activo',
+            'publicado_por',
+            'oferta_ganadora',
+        ]
+
         read_only_fields = ['publicado_por', 'fecha_publicacion', 'oferta_ganadora']
+
+
+    def get_precio_convertido(self, obj):
+        tasa_usd = obtener_tasa_cambio('USD')
+        tasa_eur = obtener_tasa_cambio('EUR')
+
+        precio_inicial= obj.precio_inicial
+
+        return {
+            'usd': round(precio_inicial * Decimal(str(tasa_usd)), 2) if tasa_usd else None,
+            'eur': round(precio_inicial * Decimal(str(tasa_eur)), 2) if tasa_eur else None
+        }
 
     def validate(self, data):
         fecha_inicio = data.get('fecha_inicio', None)

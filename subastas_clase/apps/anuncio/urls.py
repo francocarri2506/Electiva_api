@@ -23,6 +23,27 @@ urlpatterns = [
     path('generic-view/anuncios/<int:pk>/', AnuncioDetalleGenericView.as_view(), name='anuncio-detalle'),
 ]
 
+
+"""
+
+#------------------------para mantener tanto uuid como id-------------------------------
+#revisar luego del documentado
+
+urlpatterns = [
+    path('api-view/categoria/', CategoriaListaAPIView.as_view()),
+    path('api-view/categoria/<str:pk>/', CategoriaDetalleAPIView.as_view()),
+
+    path('api-view/anuncio/', AnuncioListaAPIView.as_view()),
+    path('api-view/anuncio/<str:pk>/', AnuncioDetalleAPIView.as_view()),
+
+    path('generic-view/categoria/', CategoriaListaGenericView.as_view()),
+    path('generic-view/categoria/<str:pk>/', CategoriaDetalleGenericView.as_view()),
+
+    path('generic-view/anuncios/', AnuncioListaGenericView.as_view(), name='anuncio-lista'),
+    path('generic-view/anuncios/<str:pk>/', AnuncioDetalleGenericView.as_view(), name='anuncio-detalle'),
+]
+"""
+
 """
 
 #------------------------versionado-------------------------------

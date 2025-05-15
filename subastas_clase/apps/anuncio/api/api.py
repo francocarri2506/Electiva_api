@@ -389,3 +389,28 @@ class AnuncioViewSet(viewsets.ModelViewSet):
     
         
     """
+
+
+
+
+    """ #probar luego de documentar
+    lookup_field = 'uuid'  # Establecemos UUID como campo por defecto para búsqueda
+
+    def get_object(self):
+        lookup_value = self.kwargs.get(self.lookup_url_kwarg or self.lookup_field)
+
+        try:
+            # Si es un UUID válido, buscar por UUID
+            uuid_obj = UUID(lookup_value, version=4)
+            return self.queryset.get(uuid=uuid_obj)
+
+        except (ValueError, Anuncio.DoesNotExist):
+            # Si no es UUID, intentar como ID numérico
+            if lookup_value.isdigit():
+                try:
+                    return self.queryset.get(id=int(lookup_value))
+                except Anuncio.DoesNotExist:
+                    raise NotFound("No se encontró un anuncio con ese ID.")
+            # Si no es UUID ni ID válido
+            raise ValidationError({"detalle": "El identificador no es un UUID válido ni un ID numérico."})
+    """
