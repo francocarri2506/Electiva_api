@@ -16,13 +16,3 @@ router.register(prefix='anuncios', viewset=AnuncioViewSet)
 
 # Incluir las URLs generadas automáticamente
 urlpatterns = router.urls
-
-"""
-# Ejemplo de Archivo router.py
-
-from apps.anuncio.api import CategoriaViewSet, UserViewSet
-
-# Registrar el ViewSet
-router.register(prefix='users', viewset=UserViewSet)
-
-"""

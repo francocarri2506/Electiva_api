@@ -144,7 +144,7 @@ REST_FRAMEWORK = {
         ],
 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20, #cantidad que se va a mostrar por pagina
+    'PAGE_SIZE': 5, #cantidad que se va a mostrar por pagina
 
     #----------------------------para el versionado-------------------------------
     
@@ -166,9 +166,6 @@ REST_FRAMEWORK = {
     #---------------------------para la documentacion--------------------------------
 
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-
-
-
 
 }
 

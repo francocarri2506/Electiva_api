@@ -21,11 +21,11 @@ from datetime import datetime, timezone as dt_timezone
 
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from apps.anuncio.api.permissions import EsCreadorDelAnuncio
-
+from rest_framework.exceptions import PermissionDenied
 
 from uuid import UUID
-from rest_framework.exceptions import NotFound
 from rest_framework.exceptions import NotFound, ValidationError
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 # -------------------------- API VIEW   ------------------------------------
 
@@ -209,7 +209,7 @@ class CategoriaViewSet(viewsets.ModelViewSet):
     ordering_fields = ['nombre', 'activa'] #campos por los cuales puedo ordenar
     ordering = ['nombre'] #orden por defecto
 
-from rest_framework.exceptions import PermissionDenied
+
 
 class AnuncioViewSet(viewsets.ModelViewSet):
 
@@ -281,7 +281,7 @@ class AnuncioViewSet(viewsets.ModelViewSet):
     def ofertar(self, request, pk=None):
         anuncio = self.get_object()
 
-#agregar codigos mas precisos
+        #agregar codigos mas precisos
 
         if not anuncio.activo:
             return Response({"error": "El anuncio ya no se encuentra activo."}, status=status.HTTP_400_BAD_REQUEST)
@@ -291,17 +291,29 @@ class AnuncioViewSet(viewsets.ModelViewSet):
 
         # Creamos la oferta
 
+        # serializer = OfertaAnuncioSerializer(data=request.data)
+        # if serializer.is_valid():
+        #     try:
+        #         oferta = serializer.save(usuario=request.user, anuncio=anuncio)
+        #         return Response (serializer.data, status=status.HTTP_201_CREATED)
+        #
+        #     except ValidationError as e:
+        #         #return Response({"error": e.message_dict}, status=status.HTTP_400_BAD_REQUEST)
+        #         return Response({"error": "La oferta debe ser mayor al precio inicial del artículo."}, status=status.HTTP_400_BAD_REQUEST)
+        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+        #para que funcione el test, ya que estaria tomando el valor del clean() para el error y no el de aca
+
         serializer = OfertaAnuncioSerializer(data=request.data)
         if serializer.is_valid():
             try:
                 oferta = serializer.save(usuario=request.user, anuncio=anuncio)
-                return Response (serializer.data, status=status.HTTP_201_CREATED)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except DjangoValidationError as e:
+                return Response({"error": str(e.messages[0])}, status=status.HTTP_400_BAD_REQUEST)
 
-            except ValidationError as e:
-                #return Response({"error": e.message_dict}, status=status.HTTP_400_BAD_REQUEST)
-                return Response({"error": "La oferta debe ser mayor al precio inicial del artículo."}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
     """
     def get_object(self):

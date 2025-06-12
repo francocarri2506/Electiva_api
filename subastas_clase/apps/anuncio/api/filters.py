@@ -19,6 +19,9 @@ class AnuncioFilter(django_filters.FilterSet):
     fecha_inicio_min = django_filters.DateTimeFilter(field_name="fecha_inicio", lookup_expr='gte')
     fecha_inicio_max = django_filters.DateTimeFilter(field_name="fecha_inicio", lookup_expr='lte')
 
+    categorias = django_filters.CharFilter(field_name='categorias__nombre', lookup_expr='iexact')
+
     class Meta:
         model = Anuncio
         fields = ['activo', 'publicado_por', 'categorias']
+

@@ -8,7 +8,8 @@ from django.utils import timezone
 from apps.anuncio.models import Anuncio, Categoria
 
 from decimal import Decimal
-
+from rest_framework import serializers
+from apps.anuncio.models import OfertaAnuncio
 #-------------------- serializer de categoria ------------------------
 
 class CategoriaSerializer(serializers.ModelSerializer): #
@@ -62,7 +63,7 @@ class AnuncioSerializer(serializers.ModelSerializer):
         model = Anuncio
         #fields = '__all__'
         fields = [
-            'id',
+            #'id',
             'uuid',
             'titulo',
             'descripcion',
@@ -147,8 +148,7 @@ class AnuncioSerializer(serializers.ModelSerializer):
 # mismo, verificando que se encuentre activo al momento de la oferta.
 
 
-from rest_framework import serializers
-from apps.anuncio.models import OfertaAnuncio
+
 
 class OfertaAnuncioSerializer(serializers.ModelSerializer):
     class Meta:
